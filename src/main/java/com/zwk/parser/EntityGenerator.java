@@ -53,7 +53,7 @@ public class EntityGenerator {
             getterAndSetter.append(toGetterAndSetter(columnName, javaType));
         }
 
-        sb.append(fields).append(getterAndSetter).append("\n}");
+        sb.append(fields).append(getterAndSetter).append("}");
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             fileOutputStream.write(sb.toString().getBytes(StandardCharsets.UTF_8));
         }
@@ -129,12 +129,12 @@ public class EntityGenerator {
             } else {
                 file = new File(file, packageName.replace('.', '/'));
             }
-            if (!file.exists()) {
-                file.mkdirs();
-            }
         }
         String fileName = tableName + ".java";
         if (file != null) {
+            if (!file.exists()) {
+                file.mkdirs();
+            }
             file = new File(file, fileName);
         } else {
             file = new File(fileName);
