@@ -1,27 +1,38 @@
 package com.zwk.parser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 public class EntityGenerator {
     private CreateTable createTable;
     private String location;
     private String tablePrefix;
     private String packageName;
+    private String mappingLocation;
+    private Properties properties;
 
-    public EntityGenerator(CreateTable createTable, String location, String tablePrefix, String packageName) {
+
+    public EntityGenerator(CreateTable createTable, ConfigOption configOption) {
         this.createTable = createTable;
-        this.location = location;
-        this.tablePrefix = tablePrefix;
-        this.packageName = packageName;
+        this.location = configOption.getLocation();
+        this.tablePrefix = configOption.getTablePrefix();
+        this.packageName = configOption.getPackageName();
+        this.mappingLocation = configOption.getMappingLocation();
     }
 
     public void generate() throws IOException {
         CreateTable createTable = this.createTable;
+        if (mappingLocation != null && mappingLocation.length() > 0) {
+            File file = new File(mappingLocation);
+            properties = new Properties();
+            properties.load(new FileInputStream(file));
+        }
         while (createTable != null) {
             String tableName = createTable.getTableName();
             if (tablePrefix != null) {
@@ -83,8 +94,14 @@ public class EntityGenerator {
         if (index > -1) {
             dataType = dataType.substring(0, index);
         }
-        Type type = Type.getType(dataType.toUpperCase(Locale.ROOT));
         String javaType;
+        if (properties != null) {
+             javaType = (String) properties.get(dataType.toUpperCase(Locale.ROOT));
+            if (javaType != null) {
+                return javaType;
+            }
+        }
+        Type type = Type.getType(dataType.toUpperCase(Locale.ROOT));
         if (type == null) {
             javaType = "String";
         } else {
